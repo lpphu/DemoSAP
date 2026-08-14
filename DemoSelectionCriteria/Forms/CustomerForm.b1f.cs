@@ -39,6 +39,8 @@ namespace DemoSelectionCriteria.Forms
             this.StaticText3 = ((SAPbouiCOM.StaticText)(this.GetItem("Item_7").Specific));
             this.Button0 = ((SAPbouiCOM.Button)(this.GetItem("Item_8").Specific));
             this.Button0.ClickBefore += new SAPbouiCOM._IButtonEvents_ClickBeforeEventHandler(this.Button0_ClickBefore);
+            this.ComboBox0 = ((SAPbouiCOM.ComboBox)(this.GetItem("Item_9").Specific));
+            this.StaticText4 = ((SAPbouiCOM.StaticText)(this.GetItem("Item_10").Specific));
             this.OnCustomInitialize();
 
         }
@@ -56,6 +58,15 @@ namespace DemoSelectionCriteria.Forms
         {
             CenterForm();
             CFLFillter();
+            LoadComboBox();
+        }
+
+        // Load ComboBox
+        private void LoadComboBox()
+        {
+            ComboBox0.ValidValues.Add("USD", "USD");
+            ComboBox0.ValidValues.Add("VND", "VND");
+            ComboBox0.Select("USD", SAPbouiCOM.BoSearchKey.psk_ByValue);
         }
 
         private void CenterForm()
@@ -76,27 +87,14 @@ namespace DemoSelectionCriteria.Forms
             string toDate = EditText1.Value;
             string account = EditText2.Value.Trim();
             string cardCode = EditText3.Value.Trim();
+            string currency = ComboBox0.Value;
 
             if (string.IsNullOrEmpty(fromDate) || string.IsNullOrEmpty(toDate))
                 return;
 
-            DataSet ds = service.GetTable(fromDate, toDate, account, cardCode);
-            DataTable opening = service.GetOpeningBalance(fromDate, account, cardCode);
-            DataTable dt = ds.Tables[0];
-
-            DataRow row = dt.NewRow();
-
-            row["PostingDate"] = DBNull.Value;
-            row["DocNum"] = "";
-            row["DocDate"] = DBNull.Value;
-            row["Description"] = "Số dư đầu kỳ";
-            row["ContraAccount"] = "";
-            row["DiscountTerm"] = "";
-
-            row["Debit"] = 0m;
-            row["Credit"] = 0m;
-
-            dt.Rows.InsertAt(row, 0);
+            DataSet ds = service.GetDetail(fromDate, toDate, account, cardCode, "C");
+            //DataSet ds = service.GetTable(fromDate, toDate, account, cardCode, currency, "C");
+            DataTable opening = service.GetOpeningBalance(fromDate, account, cardCode, currency, "C");
 
             ReportDocument rpt = new ReportDocument();
 
@@ -114,6 +112,8 @@ namespace DemoSelectionCriteria.Forms
 
             rpt.SetParameterValue("LedgerAccount", account);
             rpt.SetParameterValue("Customer", cardCode);
+
+            rpt.SetParameterValue("Currency", currency);
 
             // Add 
             rpt.SetParameterValue("OpeningDebit", opening.Rows[0]["OpeningDebit"]);
@@ -170,5 +170,8 @@ namespace DemoSelectionCriteria.Forms
             //throw new System.NotImplementedException();
             LoadReport();
         }
+
+        private SAPbouiCOM.ComboBox ComboBox0;
+        private SAPbouiCOM.StaticText StaticText4;
     }
 }

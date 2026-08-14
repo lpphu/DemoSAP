@@ -52,6 +52,9 @@
     <Reference Include="SAPBusinessOneSDK" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Data\PaymentData.cs">
+      <DependentUpon>PaymentData.xsd</DependentUpon>
+    </Compile>
     <Compile Include="Data\PaymentData.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>

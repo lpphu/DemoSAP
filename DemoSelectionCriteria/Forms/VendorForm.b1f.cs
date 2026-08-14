@@ -39,6 +39,8 @@ namespace DemoSelectionCriteria.Forms
             this.Button0.ClickBefore += new SAPbouiCOM._IButtonEvents_ClickBeforeEventHandler(this.Button0_ClickBefore);
             this.EditText0 = ((SAPbouiCOM.EditText)(this.GetItem("Item_0").Specific));
             this.EditText1 = ((SAPbouiCOM.EditText)(this.GetItem("Item_2").Specific));
+            this.StaticText4 = ((SAPbouiCOM.StaticText)(this.GetItem("Item_9").Specific));
+            this.ComboBox0 = ((SAPbouiCOM.ComboBox)(this.GetItem("Item_10").Specific));
             this.OnCustomInitialize();
 
         }
@@ -54,6 +56,16 @@ namespace DemoSelectionCriteria.Forms
         {
             CFLFilter();
             CenterForm();
+            LoadComboBox();
+        }
+
+        // LoadComboBox
+        private void LoadComboBox()
+        {
+            ComboBox0.ValidValues.Add("USD", "USD");
+            ComboBox0.ValidValues.Add("VND", "VND");
+
+            ComboBox0.Select("USD", SAPbouiCOM.BoSearchKey.psk_ByValue);
         }
 
         private void CenterForm()
@@ -74,12 +86,13 @@ namespace DemoSelectionCriteria.Forms
             string toDate = EditText1.Value;
             string account = EditText2.Value.Trim();
             string cardCode = EditText3.Value.Trim();
+            string currency = ComboBox0.Value.Trim();
 
             if (string.IsNullOrEmpty(fromDate) || string.IsNullOrEmpty(toDate))
                 return;
 
-            DataSet ds = service.GetTable(fromDate, toDate, account, cardCode);
-            DataTable opening = service.GetOpeningBalance(fromDate, account, cardCode);
+            DataSet ds = service.GetTable(fromDate, toDate, account, cardCode, currency, "S");
+            DataTable opening = service.GetOpeningBalance(fromDate, account, cardCode, currency, "S");
             DataTable dt = ds.Tables[0];
 
             DataRow row = dt.NewRow();
@@ -88,11 +101,11 @@ namespace DemoSelectionCriteria.Forms
             row["DocNum"] = "";
             row["DocDate"] = DBNull.Value;
             row["Description"] = "Số dư đầu kỳ";
-            row["ContraAccount"] = "";
-            row["DiscountTerm"] = "";
+            row["ContraAccount"] = "-";
+            row["DiscountTerm"] = "-";
 
-            row["Debit"] = opening.Rows[0]["OpeningDebit"];
-            row["Credit"] = opening.Rows[0]["OpeningCredit"];
+            row["Debit"] = 0m;
+            row["Credit"] = 0m;
 
             dt.Rows.InsertAt(row, 0);
 
@@ -112,6 +125,8 @@ namespace DemoSelectionCriteria.Forms
 
             rpt.SetParameterValue("LedgerAccount", account);
             rpt.SetParameterValue("Vendor", cardCode);
+
+            rpt.SetParameterValue("Currency", currency);
 
             // Add 
             rpt.SetParameterValue("OpeningDebit", opening.Rows[0]["OpeningDebit"]);
@@ -173,5 +188,8 @@ namespace DemoSelectionCriteria.Forms
 
             this.EditText3.Value = code;
         }
+
+        private SAPbouiCOM.StaticText StaticText4;
+        private SAPbouiCOM.ComboBox ComboBox0;
     }
 }
