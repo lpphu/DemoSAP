@@ -91,23 +91,7 @@ namespace DemoSelectionCriteria.Forms
             if (string.IsNullOrEmpty(fromDate) || string.IsNullOrEmpty(toDate))
                 return;
 
-            DataSet ds = service.GetTable(fromDate, toDate, account, cardCode, currency, "S");
-            DataTable opening = service.GetOpeningBalance(fromDate, account, cardCode, currency, "S");
-            DataTable dt = ds.Tables[0];
-
-            DataRow row = dt.NewRow();
-
-            row["PostingDate"] = DBNull.Value;
-            row["DocNum"] = "";
-            row["DocDate"] = DBNull.Value;
-            row["Description"] = "Số dư đầu kỳ";
-            row["ContraAccount"] = "-";
-            row["DiscountTerm"] = "-";
-
-            row["Debit"] = 0m;
-            row["Credit"] = 0m;
-
-            dt.Rows.InsertAt(row, 0);
+            DataSet ds = service.GetDetail(fromDate, toDate, account, cardCode, "S");
 
             ReportDocument rpt = new ReportDocument();
 
@@ -127,10 +111,6 @@ namespace DemoSelectionCriteria.Forms
             rpt.SetParameterValue("Vendor", cardCode);
 
             rpt.SetParameterValue("Currency", currency);
-
-            // Add 
-            rpt.SetParameterValue("OpeningDebit", opening.Rows[0]["OpeningDebit"]);
-            rpt.SetParameterValue("OpeningCredit", opening.Rows[0]["OpeningCredit"]);
 
             ReportViewerHelper.ShowReport(rpt);
         }

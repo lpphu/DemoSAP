@@ -93,9 +93,6 @@ namespace DemoSelectionCriteria.Forms
                 return;
 
             DataSet ds = service.GetDetail(fromDate, toDate, account, cardCode, "C");
-            //DataSet ds = service.GetTable(fromDate, toDate, account, cardCode, currency, "C");
-            DataTable opening = service.GetOpeningBalance(fromDate, account, cardCode, currency, "C");
-
             ReportDocument rpt = new ReportDocument();
 
             string reportPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory,
@@ -114,10 +111,6 @@ namespace DemoSelectionCriteria.Forms
             rpt.SetParameterValue("Customer", cardCode);
 
             rpt.SetParameterValue("Currency", currency);
-
-            // Add 
-            rpt.SetParameterValue("OpeningDebit", opening.Rows[0]["OpeningDebit"]);
-            rpt.SetParameterValue("OpeningCredit", opening.Rows[0]["OpeningCredit"]);
 
             ReportViewerHelper.ShowReport(rpt);
         }
