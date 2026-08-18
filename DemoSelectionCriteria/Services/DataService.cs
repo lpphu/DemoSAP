@@ -40,72 +40,13 @@ namespace DemoSelectionCriteria.Services
             // Dùng riêng cho subquery Opening Balance (không có bảng con trung gian)
             var sb = new System.Text.StringBuilder();
 
-            sb.AppendLine("SELECT");
-            sb.AppendLine("    T1.Account,");
-            sb.AppendLine("    T2.AcctName,");
-            sb.AppendLine("    T1.ShortName AS CardCode,");
-            sb.AppendLine("    T3.CardName,");
-            sb.AppendLine("    T0.RefDate,");
-            sb.AppendLine("    T0.TaxDate,");
-            sb.AppendLine("    T0.TransId,");
-            sb.AppendLine("    T0.Ref1,");
-            sb.AppendLine("    T0.Memo,");
-            sb.AppendLine("    T1b.Debit AS Credit,");
-            sb.AppendLine("    T1b.Credit AS Debit,");
-            sb.AppendLine("    T1b.Account AS ContraAccount,");
-            sb.AppendLine("    CAST(NULL AS NVARCHAR(100)) AS TransferTerm,"); 
-            sb.AppendLine("    ISNULL(OB.OpenDebit, 0) AS OpenDebit,");
-            sb.AppendLine("    ISNULL(OB.OpenCredit, 0) AS OpenCredit");
-            sb.AppendLine("FROM OJDT T0");
-            sb.AppendLine("INNER JOIN JDT1 T1");
-            sb.AppendLine("    ON T0.TransId = T1.TransId");
-            sb.AppendLine("   AND T1.Line_ID = 0");
-            sb.AppendLine("INNER JOIN JDT1 T1b");
-            sb.AppendLine("    ON T1b.TransId = T1.TransId");
-            sb.AppendLine("   AND T1b.Line_ID <> 0");
-            sb.AppendLine("   AND T1b.Account <> T1.Account");
-            sb.AppendLine("   AND (T1b.Debit <> 0 OR T1b.Credit <> 0)");
-            sb.AppendLine("INNER JOIN OCRD T3");
-            sb.AppendLine("    ON T1.ShortName = T3.CardCode");
-            sb.AppendLine("INNER JOIN OACT T2");
-            sb.AppendLine("    ON T1.Account = T2.AcctCode");
-            sb.AppendLine("LEFT JOIN");
-            sb.AppendLine("(");
-            sb.AppendLine("    SELECT");
-            sb.AppendLine("        T1.Account,");
-            sb.AppendLine("        T1.ShortName AS CardCode,");
-            sb.AppendLine("        ISNULL(SUM(T1.Debit), 0) AS OpenDebit,");
-            sb.AppendLine("        ISNULL(SUM(T1.Credit), 0) AS OpenCredit");
-            sb.AppendLine("    FROM OJDT T0");
-            sb.AppendLine("    INNER JOIN JDT1 T1");
-            sb.AppendLine("        ON T0.TransId = T1.TransId");
-            sb.AppendLine("    INNER JOIN OCRD T3");
-            sb.AppendLine("        ON T1.ShortName = T3.CardCode");
-            sb.AppendLine($"    WHERE T0.RefDate < '{fromDate}'");
-            if (!string.IsNullOrWhiteSpace(cardTypeEsc))
-                sb.AppendLine($"      AND T3.CardType = '{cardTypeEsc}'");
-            sb.AppendLine("    GROUP BY");
-            sb.AppendLine("        T1.Account,");
-            sb.AppendLine("        T1.ShortName");
-            sb.AppendLine(") OB");
-            sb.AppendLine("    ON T1.Account = OB.Account");
-            sb.AppendLine("   AND T1.ShortName = OB.CardCode");
-            sb.AppendLine($"WHERE T0.RefDate >= '{fromDate}'");
-            sb.AppendLine($"  AND T0.RefDate < '{toDate}'");
-            if (!string.IsNullOrWhiteSpace(accountEsc))
-                sb.AppendLine($"  AND T1.Account = '{accountEsc}'");
-            if (!string.IsNullOrWhiteSpace(cardCodeEsc))
-                sb.AppendLine($"  AND T1.ShortName = '{cardCodeEsc}'");
-            if (!string.IsNullOrWhiteSpace(cardTypeEsc))
-                sb.AppendLine($"  AND T3.CardType = '{cardTypeEsc}'");
-            sb.AppendLine("ORDER BY");
-            sb.AppendLine("    T1.Account,");
-            sb.AppendLine("    T1.ShortName,");
-            sb.AppendLine("    T0.RefDate,");
-            sb.AppendLine("    T0.TransId,");
-            sb.AppendLine("    T1b.Line_ID");
-
-            string sql = sb.ToString();
+            // dbo.SP_GetLedgerDetail
+            string sql = $@"EXEC dbo.SP_GetLedgerDetail
+                                @FromDate = '{fromDate}',
+                                @ToDate = '{toDate}',
+                                @Account = '{account}',
+                                @CardCode = '{cardCode}',
+                                @CardType = '{cardType}'";
             return ExecuteQuery(sql);
         }
 
